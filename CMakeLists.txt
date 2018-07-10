@@ -7,4 +7,4 @@ set(FUSE_USE_VERSION 30)
 add_executable(SaFStproj
         fs.c
         fs.h
-        main.c db.c db.h)
+        main.c)
