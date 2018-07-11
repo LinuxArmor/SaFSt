@@ -6,8 +6,12 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 
+void hello(char *str) {
+    printf("Hello, %s\n", str);
+}
+
 int main() {
-    printf("Hello, world!\n");
+    hello("world");
     socket(AF_INET, SOCK_STREAM, 1);
     return 0;
 }
