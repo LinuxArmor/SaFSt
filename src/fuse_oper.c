@@ -12,14 +12,28 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-DIR *root;
+struct options {
+    const char *path;
+} options;
+
+int before_init(int argc, char **argv, struct fuse_operations *ops) {
+    int ret;
+    struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+
+    options.path = (const char *) args.argv;
+
+    if (fuse_opt_parse(&args, &options, NULL, NULL) == -1)
+        return 1;
+
+    ret = fuse_main(args.argc, args.argv, ops, &options);
+    return ret;
+}
 
 void *do_init(struct fuse_conn_info *conn, struct fuse_config *config) {
     config->use_ino = 1;
     config->entry_timeout = 0;
     config->attr_timeout = 0;
     config->negative_timeout = 0;
-    root = open()
     return NULL;
 }
 

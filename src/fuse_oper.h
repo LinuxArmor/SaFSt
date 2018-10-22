@@ -7,15 +7,20 @@
 
 #ifndef SAFST_FS_H
 #define SAFST_FS_H
+
 typedef struct {
     ino_t d_ino;
     char entry[256];
 } safst_dirent;
+
 struct safst_dir{
     ino_t d_ino;
     char name[256];
-    struct safst_dirent entries[];
+    safst_dirent entries[];
 };
+
+int before_init(int argc, char *argv[], struct fuse_operations *ops);
+
 int do_mknod(const char *path, mode_t mode, dev_t dev);
 int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi);
 int do_write(const char *path, const char *data, size_t size, off_t offset, struct fuse_file_info *fi);

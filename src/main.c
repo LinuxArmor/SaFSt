@@ -6,6 +6,7 @@
 #include <fuse3/fuse.h>
 #include <unistd.h>
 #include <utime.h>
+#include <stdio.h>
 
 static struct fuse_operations ops = {
     .mkdir = do_mkdir,
@@ -23,5 +24,5 @@ static struct fuse_operations ops = {
 };
 
 int main(int argc, char *argv[]) {
-    return fuse_main(argc, argv, &ops, NULL);
+    return before_init(argc, argv, &ops);
 }
