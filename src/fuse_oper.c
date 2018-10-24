@@ -12,21 +12,26 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-struct options {
-    const char *path;
-} options;
 
 int before_init(int argc, char **argv, struct fuse_operations *ops) {
     int ret;
     struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 
-    options.path = (const char *) args.argv;
-
-    if (fuse_opt_parse(&args, &options, NULL, NULL) == -1)
+    if (fuse_opt_parse(&args, NULL, NULL, NULL) == -1)
         return 1;
 
-    ret = fuse_main(args.argc, args.argv, ops, &options);
+    ret = fuse_main(args.argc, args.argv, ops, NULL);
     return ret;
+}
+
+/**
+ * Concats the path to the given subpath
+ * @param path the subpath
+ * @return the full path to the directory
+ */
+char *make_path(const char *path) {
+    char *dest = malloc(strlen(PATH));
+    return strncat(dest, path, sizeof(dest) + sizeof(path));
 }
 
 void *do_init(struct fuse_conn_info *conn, struct fuse_config *config) {
@@ -39,13 +44,13 @@ void *do_init(struct fuse_conn_info *conn, struct fuse_config *config) {
 
 int do_mknod(const char *path, mode_t mode, dev_t dev) {
     if (S_ISREG(mode)) {  // allow only regular files
-        return mknod(path, mode, dev);
+        return mknod(make_path(path), mode, dev);
     }
     return -1;
 }
 
 int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
-    FILE *fd = fopen(path, "r");
+    FILE *fd = fopen(make_path(path), "r");
     (void) fi;
     if (fd==NULL)
         return -1;
@@ -60,7 +65,7 @@ int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fu
 }
 
 int do_write(const char *path, const char *data, size_t size, off_t offset, struct fuse_file_info *fi) {
-    FILE *fd = fopen(path, "w");
+    FILE *fd = fopen(make_path(path), "w");
     (void) fi;
     if (fd==NULL)
         return -1;
@@ -76,27 +81,27 @@ int do_write(const char *path, const char *data, size_t size, off_t offset, stru
 }
 
 int do_mkdir(const char *path, mode_t mode) {
-    return mkdir(path, mode);
+    return mkdir(make_path(path), mode);
 }
 
 int do_getattr(const char *path, struct stat *stat, struct fuse_file_info *fi) {
-    return lstat(path, stat);
+    return lstat(make_path(path), stat);
 }
 
 int do_open(const char *path, struct fuse_file_info *fi) {
-    return open(path, fi->flags);
+    return open(make_path(path), fi->flags);
 }
 
 int do_chmod(const char *path, mode_t mode, struct fuse_file_info *info) {
-    return chmod(path, mode);
+    return chmod(make_path(path), mode);
 }
 
 int do_chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *info) {
-    return chown(path, uid, gid);
+    return AT_EACCESS;
 }
 
 int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *info,enum fuse_readdir_flags fs) {
-    DIR *dir = opendir(path);
+    DIR *dir = opendir(make_path(path));
     struct dirent *ent;
     if (dir == NULL) {
         return -1;
@@ -105,8 +110,8 @@ int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t off
         struct stat st;
         memset(&st, 0, sizeof(st));
         st.st_ino = ent->d_ino;
-        st.st_mode = ent->d_type << 12;
-        if (filler(buffer, path, &st, ent->d_off, 0))
+        st.st_mode = (__mode_t) ((ent->d_type << 12) | S_IRWXU);
+        if (filler(buffer, make_path(path), &st, ent->d_off, 0))
             break;
     }
     closedir(dir);

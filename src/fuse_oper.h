@@ -7,17 +7,7 @@
 
 #ifndef SAFST_FS_H
 #define SAFST_FS_H
-
-typedef struct {
-    ino_t d_ino;
-    char entry[256];
-} safst_dirent;
-
-struct safst_dir{
-    ino_t d_ino;
-    char name[256];
-    safst_dirent entries[];
-};
+#define PATH "/var/lib/safst"
 
 int before_init(int argc, char *argv[], struct fuse_operations *ops);
 

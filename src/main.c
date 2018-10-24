@@ -4,6 +4,7 @@
 #define FUSE_USE_VERSION 31
 #include "fuse_oper.h"
 #include <fuse3/fuse.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
 #include <stdio.h>
@@ -24,5 +25,14 @@ static struct fuse_operations ops = {
 };
 
 int main(int argc, char *argv[]) {
-    return before_init(argc, argv, &ops);
+    if (geteuid() != 0) {
+        puts("Error: Root permissions are needed!");
+        return 126;
+    }
+    DIR *dir = opendir(PATH);
+    if (!dir) {
+        mkdir(PATH, S_IFDIR); // Make the source directory with only root access
+    }
+    closedir(dir);
+    return fuse_main(argc, argv, &ops, NULL);
 }
