@@ -29,9 +29,9 @@ int main(int argc, char *argv[]) {
         puts("Error: Root permissions are needed!");
         return 126;
     }
-    DIR *dir = opendir(PATH);
+    DIR *dir = opendir("/usr/local/var/safst");
     if (!dir) {
-        mkdir(PATH, S_IFDIR); // Make the source directory with only root access
+        mkdir("/usr/local/var/safst", S_IFDIR); // Make the source directory with only root access
     }
     closedir(dir);
     return fuse_main(argc, argv, &ops, NULL);
