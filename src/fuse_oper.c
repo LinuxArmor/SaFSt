@@ -90,7 +90,7 @@ int do_getattr(const char *path, struct stat *stat, struct fuse_file_info *fi) {
     const char *p = make_path(path);
     int re = lstat(p, stat);
     free((void *) p);
-    stat->st_mode |= S_IRUSR | S_IWUSR;
+    stat->st_mode |= S_IRUSR | S_IWUSR | S_IROTH;
     return re;
 }
 
@@ -124,7 +124,7 @@ int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t off
         struct stat st;
         memset(&st, 0, sizeof(st));
         st.st_ino = ent->d_ino;
-        st.st_mode = (__mode_t) (ent->d_type << 12 | S_IRUSR | S_IWUSR);
+        st.st_mode = (__mode_t) ((ent->d_type << 12) | S_IRUSR | S_IROTH | S_IWUSR);
         if (filler(buffer, make_path(path), &st, ent->d_off, 0))
             break;
     }
