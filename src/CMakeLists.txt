@@ -9,7 +9,7 @@ endif()
 include_directories(SYSTEM ${FUSE3_INCLUDE_DIR})
 
 set(SOURCE_FILES
-        fuse_oper.c fuse_oper.h watcher.c watcher.h cache.c cache.h)
+        fuse_oper.c fuse_oper.h watcher.c watcher.h cache.c cache.h fs.c fs.h)
 
 add_library(safst-core ${SOURCE_FILES})
 target_link_libraries(safst-core ${FUSE3_LIBRARIES} ${LEVELDB})
