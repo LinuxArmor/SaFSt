@@ -6,6 +6,7 @@
 #define SAFST_FS_H
 
 #include <sys/types.h>
+#include <cjson/cJSON.h>
 
 typedef struct {
     mode_t mode; // mode
@@ -18,8 +19,45 @@ typedef struct {
     char *filename; // the filename / path
 } safst_file;
 
-typedef struct {
+cJSON *fileToJson(safst_file *file) {
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(json, "mode", file->mode);
+    cJSON_AddNumberToObject(json, "uid", file->uid);
+    cJSON_AddNumberToObject(json, "gid", file->gid);
+    cJSON_AddNumberToObject(json, "size", file->size);
+    cJSON_AddNumberToObject(json, "ctime", file->ctime);
+    cJSON_AddNumberToObject(json, "atime", file->atime);
+    cJSON_AddNumberToObject(json, "mtime", file->mtime);
+    cJSON_AddStringToObject(json, "filename", file->filename);
+    return json;
+}
 
-} safst_dir;
+/**
+ * Add a file to the cache
+ * @param file file properties
+ * @return error codes
+ */
+char *addFile(safst_file *file);
+
+/**
+ * Get file metadata
+ * @param path the path
+ * @return the file
+ */
+safst_file *getFile(char *path);
+
+/**
+ * Delete the file metadata
+ * @param path the path
+ * @return the meta data of the file deleted
+ */
+safst_file *deleteFile(char *path);
+
+/**
+ * Update the file metadata
+ * @param file the file
+ * @return the meta data of the old file
+ */
+safst_file *editFile(safst_file *file);
 
 #endif //SAFST_FS_H
