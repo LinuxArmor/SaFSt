@@ -44,20 +44,20 @@ char *addFile(safst_file *file);
  * @param path the path
  * @return the file
  */
-safst_file *getFile(char *path);
+safst_file *getFile(char *path, char **err);
 
 /**
  * Delete the file metadata
  * @param path the path
  * @return the meta data of the file deleted
  */
-safst_file *deleteFile(char *path);
+safst_file *deleteFile(char *path, char **err);
 
 /**
  * Update the file metadata
  * @param file the file
  * @return the meta data of the old file
  */
-safst_file *editFile(safst_file *file);
+safst_file *editFile(safst_file *file, char **err);
 
 #endif //SAFST_FS_H

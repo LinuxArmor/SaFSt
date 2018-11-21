@@ -8,6 +8,11 @@
 #include "fs.h"
 #include <string.h>
 
+/**
+ * Add a file to the cache
+ * @param file file properties
+ * @return error codes
+ */
 char *addFile(safst_file *file) {
     cJSON *json = fileToJson(file); // serialize to json
     char *err = NULL;
@@ -16,6 +21,7 @@ char *addFile(safst_file *file) {
     leveldb_options_set_create_if_missing(opts, 1); // create the file if it doesn't exist
     leveldb_t *db = leveldb_open(opts, "filescache", &err); // open the cache
 
+    leveldb_free(db);
     leveldb_free(opts);
     if (err != NULL) {
         leveldb_free(err);
@@ -31,6 +37,7 @@ char *addFile(safst_file *file) {
     leveldb_put(db, writeoptions, file->filename, strlen(file->filename), formatted, strlen(formatted), &err);
 
     leveldb_free(writeoptions);
+    leveldb_free(db);
     cJSON_free(json);
     free(file->filename);
     free(file);
@@ -50,7 +57,7 @@ char *addFile(safst_file *file) {
  * @param path the path
  * @return the file
  */
-safst_file *getFile(char *path) {
+safst_file *getFile(char *path, char **err) {
 }
 
 /**
@@ -58,8 +65,38 @@ safst_file *getFile(char *path) {
  * @param path the path
  * @return the meta data of the file deleted
  */
-safst_file *deleteFile(char *path) {
+safst_file *deleteFile(char *path, char **err) {
+    safst_file *old = getFile(path, err);
 
+    if (*err != NULL) {
+        free(old);
+        free(path);
+        return NULL;
+    }
+
+    leveldb_options_t *opts = leveldb_options_create();
+    leveldb_options_set_create_if_missing(opts, 1); // create the file if it doesn't exist
+    leveldb_t *db = leveldb_open(opts, "filescache", err); // open the cache
+    
+    leveldb_free(opts);
+    if (*err != NULL) {
+        leveldb_free(db);
+        return old;
+    }
+    leveldb_free(err);
+
+    leveldb_writeoptions_t *wopts = leveldb_writeoptions_create();
+    leveldb_delete(db, wopts, path, strlen(path), err);
+
+    leveldb_free(db);
+    leveldb_free(wopts);
+    free(path);
+
+    if (*err != NULL) {
+        return old;
+    }
+
+    return old;
 }
 
 /**
@@ -67,6 +104,6 @@ safst_file *deleteFile(char *path) {
  * @param path the path
  * @return the meta data of the old file
  */
-safst_file *editFile(char *path) {
+safst_file *editFile(safst_file *path, char **err) {
 
 }
