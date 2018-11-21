@@ -77,7 +77,7 @@ safst_file *deleteFile(char *path, char **err) {
     leveldb_options_t *opts = leveldb_options_create();
     leveldb_options_set_create_if_missing(opts, 1); // create the file if it doesn't exist
     leveldb_t *db = leveldb_open(opts, "filescache", err); // open the cache
-    
+
     leveldb_free(opts);
     if (*err != NULL) {
         leveldb_free(db);
